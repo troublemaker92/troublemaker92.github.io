@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculate Vacation Days</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Vacation Days Calculator</h1>
+        <form id="vacationForm" class="mt-4" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="daysPerWeek">Days Per Week:</label>
+                <input type="number" class="form-control" id="daysPerWeek" name="daysPerWeek" required max="7" step="1">
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" class="form-control" id="endDate" name="endDate" required>
+            </div>
+            <div class="form-group">
+                <label for="saldo">Current Saldo:</label>
+                <input type="number" step="0.01" class="form-control" id="saldo" name="saldo" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Calculate</button>
+        </form>
+
+        <div id="result" class="result-container mt-4"></div>
+    </div>
+
+    <script>
+        function getDaysInCurrentYear() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const end = new Date(now.getFullYear(), 11, 31);
+            return Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
+        }
+
+        function validateForm() {
+            const daysPerWeek = document.getElementById('daysPerWeek').value;
+
+            if (daysPerWeek < 1 || daysPerWeek > 7 || !Number.isInteger(parseFloat(daysPerWeek))) {
+                alert('Days Per Week must be an integer between 1 and 7.');
+                return false;
+            }
+
+            calculateVacationDays();
+            return false;
+        }
+
+        function calculateVacationDays() {
+            const daysPerWeek = document.getElementById('daysPerWeek').value;
+            const endDate = document.getElementById('endDate').value;
+            const saldo = document.getElementById('saldo').value;
+
+            const customerData = {
+                daysPerWeek: parseInt(daysPerWeek),
+                endDate: new Date(endDate),
+                saldo: parseFloat(saldo)
+            };
+
+            const vacDaysInYear = customerData.daysPerWeek * 5;
+            const daysInCurrentYear = getDaysInCurrentYear();
+            const vacDaysPerDay = (vacDaysInYear / daysInCurrentYear).toFixed(11);
+            const monthBegin = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const daysBetween = Math.ceil((customerData.endDate - monthBegin) / (1000 * 60 * 60 * 24));
+
+            const vacDaysFutureSaldoUnrounded = (daysBetween * vacDaysPerDay).toFixed(11);
+            const finalSaldoUnrounded = (parseFloat(customerData.saldo) + parseFloat(vacDaysFutureSaldoUnrounded)).toFixed(11);
+            const finalSaldo = parseFloat(finalSaldoUnrounded).toFixed(2);
+
+            const resultHtml = `
+                <h4>Calculation Details</h4>
+                <ul>
+                    <li><strong>Vacation Days in Year:</strong> ${vacDaysInYear}</li>
+                    <li><strong>Days in Current Year:</strong> ${daysInCurrentYear}</li>
+                    <li><strong>Vacation Days per Day:</strong> ${vacDaysPerDay}</li>
+                    <li><strong>Days Between:</strong> ${daysBetween}</li>
+                    <li><strong>Month Begin:</strong> ${monthBegin.toDateString()}</li>
+                </ul>
+                <h4>🟢 Urlaubsguthaben: ${finalSaldo}</h4>
+            `;
+
+            document.getElementById('result').innerHTML = resultHtml;
+        }
+    </script>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
