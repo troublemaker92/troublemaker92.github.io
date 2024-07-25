@@ -39,15 +39,9 @@
         </form>
 
         <div id="result" class="result-container mt-4"></div>
-        <div id="counter" class="mt-4 text-center">
-            <h4>Helped: <span id="count">0</span> times</h4>
-        </div>
     </div>
 
     <script>
-        let counter = 0;
-        let lastData = { daysPerWeek: null, endDate: null, saldo: null };
-
         function getDaysInCurrentYear() {
             const now = new Date();
             const start = new Date(now.getFullYear(), 0, 1);
@@ -57,32 +51,32 @@
 
         function validateForm() {
             const daysPerWeek = document.getElementById('daysPerWeek').value;
-            const endDate = document.getElementById('endDate').value;
-            const saldo = document.getElementById('saldo').value;
 
             if (daysPerWeek < 1 || daysPerWeek > 7 || !Number.isInteger(parseFloat(daysPerWeek))) {
                 alert('Days Per Week must be an integer between 1 and 7.');
                 return false;
             }
 
-            const currentData = { daysPerWeek, endDate, saldo };
-
-            if (JSON.stringify(currentData) !== JSON.stringify(lastData)) {
-                calculateVacationDays(currentData);
-                counter++;
-                document.getElementById('count').innerText = counter;
-                lastData = currentData;
-            }
-
+            calculateVacationDays();
             return false;
         }
 
-        function calculateVacationDays(customerData) {
+        function calculateVacationDays() {
+            const daysPerWeek = document.getElementById('daysPerWeek').value;
+            const endDate = document.getElementById('endDate').value;
+            const saldo = document.getElementById('saldo').value;
+
+            const customerData = {
+                daysPerWeek: parseInt(daysPerWeek),
+                endDate: new Date(endDate),
+                saldo: parseFloat(saldo)
+            };
+
             const vacDaysInYear = customerData.daysPerWeek * 5;
             const daysInCurrentYear = getDaysInCurrentYear();
             const vacDaysPerDay = (vacDaysInYear / daysInCurrentYear).toFixed(11);
             const monthBegin = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-            const daysBetween = Math.ceil((new Date(customerData.endDate) - monthBegin) / (1000 * 60 * 60 * 24));
+            const daysBetween = Math.ceil((customerData.endDate - monthBegin) / (1000 * 60 * 60 * 24));
 
             const vacDaysFutureSaldoUnrounded = (daysBetween * vacDaysPerDay).toFixed(11);
             const finalSaldoUnrounded = (parseFloat(customerData.saldo) + parseFloat(vacDaysFutureSaldoUnrounded)).toFixed(11);
