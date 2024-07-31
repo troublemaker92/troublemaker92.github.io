@@ -3,103 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculate Vacation Days</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Saldo Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            padding: 20px;
-        }
-        .result-container {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            background-color: #f8f9fa;
-        }
+        .hidden { display: none; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1 class="text-center">Vacation Days Calculator</h1>
-        <form id="vacationForm" class="mt-4" onsubmit="return validateForm()">
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Vacation Days Calculator</h1>
+        <form id="saldoForm" class="bg-white p-4 rounded shadow-sm">
             <div class="form-group">
-                <label for="daysPerWeek">Days Per Week:</label>
-                <input type="number" class="form-control" id="daysPerWeek" name="daysPerWeek" required max="7" step="1">
+                <label for="dateTo">To Date:</label>
+                <input type="date" class="form-control" id="dateTo" name="dateTo" required>
             </div>
+            
             <div class="form-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" class="form-control" id="endDate" name="endDate" required>
+                <label for="currentSaldo">Current Saldo:</label>
+                <input type="number" class="form-control" id="currentSaldo" name="currentSaldo" step="0.01" required>
             </div>
+            
             <div class="form-group">
-                <label for="saldo">Current Saldo:</label>
-                <input type="number" step="0.01" class="form-control" id="saldo" name="saldo" required>
+                <label for="workingDaysPerWeek">Working Days Per Week:</label>
+                <input type="number" class="form-control" id="workingDaysPerWeek" name="workingDaysPerWeek" required>
             </div>
-            <button type="submit" class="btn btn-primary">Calculate</button>
+            
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="worksLessThanMonth" name="worksLessThanMonth">
+                <label class="form-check-label" for="worksLessThanMonth">Work less than a month</label>
+            </div>
+            
+            <div id="dateFromContainer" class="form-group hidden">
+                <label for="additionalDateFrom">From Date:</label>
+                <input type="date" class="form-control" id="additionalDateFrom" name="additionalDateFrom">
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="calculateSaldo()">Calculate</button>
         </form>
 
-        <div id="result" class="result-container mt-4"></div>
+        <h2 class="text-center mt-5">Result:</h2>
+        <pre id="result" class="bg-white p-4 rounded shadow-sm"></pre>
     </div>
 
     <script>
-        function getDaysInCurrentYear() {
-            const now = new Date();
-            const start = new Date(now.getFullYear(), 0, 1);
-            const end = new Date(now.getFullYear(), 11, 31);
-            return Math.ceil((end - start + 1) / (1000 * 60 * 60 * 24));
-        }
+        document.getElementById('worksLessThanMonth').addEventListener('change', function() {
+            const dateFromContainer = document.getElementById('dateFromContainer');
+            if (this.checked) {
+                dateFromContainer.classList.remove('hidden');
+            } else {
+                dateFromContainer.classList.add('hidden');
+                document.getElementById('additionalDateFrom').value = '';
+            }
+        });
 
-        function validateForm() {
-            const daysPerWeek = document.getElementById('daysPerWeek').value;
+        function calculateSaldo() {
+            const dateTo = document.getElementById('dateTo').value;
+            const currentSaldo = parseFloat(document.getElementById('currentSaldo').value);
+            const workingDaysPerWeek = parseInt(document.getElementById('workingDaysPerWeek').value);
+            const worksLessThanMonth = document.getElementById('worksLessThanMonth').checked;
+            const additionalDateFrom = document.getElementById('additionalDateFrom').value;
 
-            if (daysPerWeek < 1 || daysPerWeek > 7 || !Number.isInteger(parseFloat(daysPerWeek))) {
-                alert('Days Per Week must be an integer between 1 and 7.');
-                return false;
+            if (!dateTo || isNaN(currentSaldo) || isNaN(workingDaysPerWeek)) {
+                alert('Please fill all required fields.');
+                return;
             }
 
-            calculateVacationDays();
-            return false;
-        }
+            const vacDaysInYear = workingDaysPerWeek * 5;
+            const vacDaysInMonth = (vacDaysInYear / 12).toFixed(2);
+            const dateToObj = new Date(dateTo);
+            const currentMonth = new Date().getMonth() + 1;
+            const monthsBetween = dateToObj.getMonth() + 1 - currentMonth;
+            const daysInTheLastMonth = new Date(dateToObj.getFullYear(), dateToObj.getMonth() + 1, 0).getDate();
 
-        function calculateVacationDays() {
-            const daysPerWeek = document.getElementById('daysPerWeek').value;
-            const endDate = document.getElementById('endDate').value;
-            const saldo = document.getElementById('saldo').value;
+            let multiplyFactor;
+            if (worksLessThanMonth) {
+                const additionalDateFromObj = new Date(additionalDateFrom);
+                const daysWorkedInMonth = dateToObj.getDate() - additionalDateFromObj.getDate();
+                multiplyFactor = daysWorkedInMonth;
+            } else {
+                multiplyFactor = dateToObj.getDate();
+            }
+            const vacDaysInTheLastMonth = ((vacDaysInMonth / daysInTheLastMonth) * multiplyFactor).toFixed(10);
+            const vacDaysInt = (vacDaysInMonth * monthsBetween).toFixed(2);
+            const vacDaysTotal = (parseFloat(vacDaysInTheLastMonth) + parseFloat(vacDaysInt)).toFixed(2);
+            const saldoResult = (parseFloat(vacDaysTotal) + currentSaldo).toFixed(2);
 
-            const customerData = {
-                daysPerWeek: parseInt(daysPerWeek),
-                endDate: new Date(endDate),
-                saldo: parseFloat(saldo)
-            };
+            const result = `
 
-            const vacDaysInYear = customerData.daysPerWeek * 5;
-            const daysInCurrentYear = getDaysInCurrentYear();
-            const vacDaysPerDay = (vacDaysInYear / daysInCurrentYear).toFixed(11);
-            const monthBegin = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-            const daysBetween = Math.ceil((customerData.endDate - monthBegin) / (1000 * 60 * 60 * 24));
+Vacation Days in a Year: ${vacDaysInYear}
+Vacation Days per Month: ${vacDaysInMonth}
+Months Between: ${monthsBetween}
+Days in the Last Month: ${daysInTheLastMonth}
+Worked Less Than a Month: ${worksLessThanMonth}
+Vacation Days in the Last Month: ${vacDaysInTheLastMonth}
+Total Vacation Days: ${vacDaysTotal}
+Saldo Result: ${saldoResult}
+`;
 
-            const vacDaysFutureSaldoUnrounded = (daysBetween * vacDaysPerDay).toFixed(11);
-            const finalSaldoUnrounded = (parseFloat(customerData.saldo) + parseFloat(vacDaysFutureSaldoUnrounded)).toFixed(11);
-            const finalSaldo = parseFloat(finalSaldoUnrounded).toFixed(2);
-
-            const resultHtml = `
-                <h4>Calculation Details</h4>
-                <ul>
-                    <li><strong>Vacation Days in Year:</strong> ${vacDaysInYear}</li>
-                    <li><strong>Days in Current Year:</strong> ${daysInCurrentYear}</li>
-                    <li><strong>Vacation Days per Day:</strong> ${vacDaysPerDay}</li>
-                    <li><strong>Days Between:</strong> ${daysBetween}</li>
-                    <li><strong>Month Begin:</strong> ${monthBegin.toDateString()}</li>
-                </ul>
-                <h4>🟢 Urlaubsguthaben: ${finalSaldo}</h4>
-            `;
-
-            document.getElementById('result').innerHTML = resultHtml;
+            document.getElementById('result').textContent = result;
         }
     </script>
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
