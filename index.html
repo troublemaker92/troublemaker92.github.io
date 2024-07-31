@@ -7,25 +7,33 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         .hidden { display: none; }
+        .popover {
+            max-width: 100px;
+        }
     </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Vacation Days Calculator</h1>
-        <form id="saldoForm" class="bg-white p-4 rounded shadow-sm">
+        <h1 class="text-center mb-4">Saldo Calculator</h1>
+        <form id="saldoForm" class="bg-white p-4 rounded shadow-sm" novalidate>
+            <div id="warnings" class="alert alert-danger hidden" role="alert"></div>
+
             <div class="form-group">
-                <label for="dateTo">To Date:</label>
-                <input type="date" class="form-control" id="dateTo" name="dateTo" required>
+                <label for="austrittsdatum">Austrittsdatum:</label>
+                <input type="date" class="form-control" id="austrittsdatum" name="austrittsdatum" required data-toggle="popover" data-content="Please select a date from the current month or later.">
             </div>
             
             <div class="form-group">
                 <label for="currentSaldo">Current Saldo:</label>
-                <input type="number" class="form-control" id="currentSaldo" name="currentSaldo" step="0.01" required>
+                <input type="number" class="form-control" id="currentSaldo" name="currentSaldo" step="0.01" required data-toggle="popover" data-content="Please enter a valid number for the current saldo.">
             </div>
             
             <div class="form-group">
                 <label for="workingDaysPerWeek">Working Days Per Week:</label>
-                <input type="number" class="form-control" id="workingDaysPerWeek" name="workingDaysPerWeek" required>
+                <input type="number" class="form-control" id="workingDaysPerWeek" name="workingDaysPerWeek" min="1" max="6" required data-toggle="popover" data-content="Working Days Per Week must be a number between 1 and 6.">
             </div>
             
             <div class="form-check mb-3">
@@ -35,7 +43,7 @@
             
             <div id="dateFromContainer" class="form-group hidden">
                 <label for="additionalDateFrom">From Date:</label>
-                <input type="date" class="form-control" id="additionalDateFrom" name="additionalDateFrom">
+                <input type="date" class="form-control" id="additionalDateFrom" name="additionalDateFrom" data-toggle="popover" data-content="Please enter a valid from date.">
             </div>
 
             <button type="button" class="btn btn-primary" onclick="calculateSaldo()">Calculate</button>
@@ -46,31 +54,115 @@
     </div>
 
     <script>
-        document.getElementById('worksLessThanMonth').addEventListener('change', function() {
-            const dateFromContainer = document.getElementById('dateFromContainer');
-            if (this.checked) {
-                dateFromContainer.classList.remove('hidden');
-            } else {
-                dateFromContainer.classList.add('hidden');
-                document.getElementById('additionalDateFrom').value = '';
-            }
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const austrittsdatum = document.getElementById('austrittsdatum');
+            const currentDate = new Date();
+            const currentMonthFirstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const formattedDate = currentMonthFirstDay.toISOString().split('T')[0];
+            austrittsdatum.setAttribute('min', formattedDate);
+
+            $('[data-toggle="popover"]').popover({
+                trigger: 'manual',
+                placement: 'right'
+            });
+
+            document.getElementById('worksLessThanMonth').addEventListener('change', function() {
+                const dateFromContainer = document.getElementById('dateFromContainer');
+                if (this.checked) {
+                    dateFromContainer.classList.remove('hidden');
+                } else {
+                    dateFromContainer.classList.add('hidden');
+                    document.getElementById('additionalDateFrom').value = '';
+                }
+            });
         });
 
+        function showWarning(message) {
+            const warningsDiv = document.getElementById('warnings');
+            warningsDiv.textContent = message;
+            warningsDiv.classList.remove('hidden');
+        }
+
+        function clearWarnings() {
+            const warningsDiv = document.getElementById('warnings');
+            warningsDiv.textContent = '';
+            warningsDiv.classList.add('hidden');
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const austrittsdatum = document.getElementById('austrittsdatum');
+            const currentSaldo = document.getElementById('currentSaldo');
+            const workingDaysPerWeek = document.getElementById('workingDaysPerWeek');
+            const additionalDateFrom = document.getElementById('additionalDateFrom');
+            const worksLessThanMonth = document.getElementById('worksLessThanMonth').checked;
+            const currentDate = new Date();
+            const currentMonthFirstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+            // Austrittsdatum validation
+            if (!austrittsdatum.value || new Date(austrittsdatum.value) < currentMonthFirstDay) {
+                isValid = false;
+                $(austrittsdatum).popover('show');
+                austrittsdatum.classList.add('is-invalid');
+            } else {
+                $(austrittsdatum).popover('hide');
+                austrittsdatum.classList.remove('is-invalid');
+            }
+
+            // Current Saldo validation
+            if (isNaN(parseFloat(currentSaldo.value))) {
+                isValid = false;
+                $(currentSaldo).popover('show');
+                currentSaldo.classList.add('is-invalid');
+            } else {
+                $(currentSaldo).popover('hide');
+                currentSaldo.classList.remove('is-invalid');
+            }
+
+            // Working Days Per Week validation
+            if (isNaN(workingDaysPerWeek.value) || workingDaysPerWeek.value < 1 || workingDaysPerWeek.value > 6) {
+                isValid = false;
+                $(workingDaysPerWeek).popover('show');
+                workingDaysPerWeek.classList.add('is-invalid');
+            } else {
+                $(workingDaysPerWeek).popover('hide');
+                workingDaysPerWeek.classList.remove('is-invalid');
+            }
+
+            // Additional Date From validation (if applicable)
+            if (worksLessThanMonth && !additionalDateFrom.value) {
+                isValid = false;
+                $(additionalDateFrom).popover('show');
+                additionalDateFrom.classList.add('is-invalid');
+            } else {
+                $(additionalDateFrom).popover('hide');
+                additionalDateFrom.classList.remove('is-invalid');
+            }
+
+            return isValid;
+        }
+
         function calculateSaldo() {
-            const dateTo = document.getElementById('dateTo').value;
+            clearWarnings();
+
+            if (!validateForm()) {
+                showWarning('Please correct the highlighted fields.');
+                return;
+            }
+
+            const austrittsdatum = document.getElementById('austrittsdatum').value;
             const currentSaldo = parseFloat(document.getElementById('currentSaldo').value);
             const workingDaysPerWeek = parseInt(document.getElementById('workingDaysPerWeek').value);
             const worksLessThanMonth = document.getElementById('worksLessThanMonth').checked;
             const additionalDateFrom = document.getElementById('additionalDateFrom').value;
 
-            if (!dateTo || isNaN(currentSaldo) || isNaN(workingDaysPerWeek)) {
-                alert('Please fill all required fields.');
-                return;
-            }
+            const currentDate = new Date();
+            const currentMonthFirstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const formattedCurrentMonthFirstDay = currentMonthFirstDay.toISOString().split('T')[0];
 
             const vacDaysInYear = workingDaysPerWeek * 5;
             const vacDaysInMonth = (vacDaysInYear / 12).toFixed(2);
-            const dateToObj = new Date(dateTo);
+            const dateToObj = new Date(austrittsdatum);
             const currentMonth = new Date().getMonth() + 1;
             const monthsBetween = dateToObj.getMonth() + 1 - currentMonth;
             const daysInTheLastMonth = new Date(dateToObj.getFullYear(), dateToObj.getMonth() + 1, 0).getDate();
@@ -89,7 +181,8 @@
             const saldoResult = (parseFloat(vacDaysTotal) + currentSaldo).toFixed(2);
 
             const result = `
-
+Vacation Days Calculation Results:
+----------------------------------
 Vacation Days in a Year: ${vacDaysInYear}
 Vacation Days per Month: ${vacDaysInMonth}
 Months Between: ${monthsBetween}
