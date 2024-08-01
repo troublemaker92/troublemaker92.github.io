@@ -21,6 +21,8 @@
             transform: translate(-50%, -50%);
             z-index: 1000;
         }
+
+
     </style>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -52,7 +54,9 @@
             
             <div class="form-check mb-3">
                 <input type="checkbox" class="form-check-input" id="worksLessThanMonth" name="worksLessThanMonth">
-                <label class="form-check-label" for="worksLessThanMonth">Arbeitet weniger als ein Monat??</label>
+                <label class="form-check-label" for="worksLessThanMonth">Arbeitet weniger als einen Monat?? 
+                </label>
+                
             </div>
             
             <div id="dateFromContainer" class="form-group hidden">
@@ -221,6 +225,8 @@
             return true;
         }
 
+
+
         function calculateSaldo() {
             clearWarnings();
 
@@ -244,7 +250,7 @@
             const vacDaysInMonth = (vacDaysInYear / 12).toFixed(2);
             const dateToObj = new Date(dateTo);
             const currentMonth = new Date().getMonth() + 1;
-            const monthsBetween = dateToObj.getMonth() + 1 - currentMonth;
+            const monthsBetween = monthsBetweenF(currentDate, dateTo);
             const daysInTheLastMonth = new Date(dateToObj.getFullYear(), dateToObj.getMonth() + 1, 0).getDate();
 
             let multiplyFactor;
@@ -259,19 +265,32 @@
             const vacDaysInt = (vacDaysInMonth * monthsBetween).toFixed(2);
             const vacDaysTotal = (parseFloat(vacDaysInTheLastMonth) + parseFloat(vacDaysInt)).toFixed(2);
             const saldoResult = (parseFloat(vacDaysTotal) + currentSaldo).toFixed(2);
+            const altm = worksLessThanMonth == true ? 'Ja' : 'Nein'
             showLoader();
             const result = `
-Vacation Days in a Year: ${vacDaysInYear}
-Vacation Days per Month: ${vacDaysInMonth}
-Months Between: ${monthsBetween}
-Days in the Last Month: ${daysInTheLastMonth}
-Worked Less Than a Month: ${worksLessThanMonth}
-Vacation Days in the Last Month: ${vacDaysInTheLastMonth}
-Total Vacation Days: ${vacDaysTotal}
-<span class="big-smiley">🟢</span>Saldo Result: ${saldoResult}
+Urlaubsanspruch pro Jahr: ${vacDaysInYear}
+Urlaubsanspruch pro Monat: ${vacDaysInMonth}
+Monate zwischen now und Austrittsdatum: ${monthsBetween}
+Anzahl der Tage im Austrittsmonat: ${daysInTheLastMonth}
+Arbeitet weniger als einen Monat: ${altm}
+Urlaubsanspruch pro Tag im Austrittsmonat: ${vacDaysInTheLastMonth}
+Urlaubsanspruch (exkl. Saldo): ${vacDaysTotal}
+<span class="big-smiley">🟢 Saldo Result: ${saldoResult}</span>
 `;
 document.getElementById('result').innerHTML = result;
+        }
+
+        function monthsBetweenF(date1, date2) {
+            // Ensure both dates are set to the first of the month
+            let d1 = new Date(date1.getFullYear(), date1.getMonth(), 1);
+            let d2 = new Date(date2.getFullYear(), date2.getMonth(), 1);
+            
+            // Calculate the difference in months
+            let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+            return months;
         }
     </script>
 </body>
 </html>
+
+
