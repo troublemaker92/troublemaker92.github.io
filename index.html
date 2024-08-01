@@ -54,7 +54,7 @@
             
             <div class="form-check mb-3">
                 <input type="checkbox" class="form-check-input" id="worksLessThanMonth" name="worksLessThanMonth">
-                <label class="form-check-label" for="worksLessThanMonth">Arbeitet weniger als einen Monat?? 
+                <label class="form-check-label" for="worksLessThanMonth">Eintritt und Austritt im gleichen Monat? 
                 </label>
                 
             </div>
@@ -261,7 +261,8 @@
             } else {
                 multiplyFactor = dateToObj.getDate();
             }
-            const vacDaysInTheLastMonth = ((vacDaysInMonth / daysInTheLastMonth) * multiplyFactor).toFixed(10);
+            const vacDaysProDayInLastMonth = (vacDaysInMonth / daysInTheLastMonth);
+            const vacDaysInTheLastMonth = (vacDaysProDayInLastMonth * multiplyFactor).toFixed(10);
             const vacDaysInt = (vacDaysInMonth * monthsBetween).toFixed(2);
             const vacDaysTotal = (parseFloat(vacDaysInTheLastMonth) + parseFloat(vacDaysInt)).toFixed(2);
             const saldoResult = (parseFloat(vacDaysTotal) + currentSaldo).toFixed(2);
@@ -272,9 +273,14 @@ Urlaubsanspruch pro Jahr: ${vacDaysInYear}
 Urlaubsanspruch pro Monat: ${vacDaysInMonth}
 Monate zwischen now und Austrittsdatum: ${monthsBetween}
 Anzahl der Tage im Austrittsmonat: ${daysInTheLastMonth}
-Arbeitet weniger als einen Monat: ${altm}
+Eintritt und Austritt im gleichen Monat: ${altm}
 Urlaubsanspruch pro Tag im Austrittsmonat: ${vacDaysInTheLastMonth}
 Urlaubsanspruch (exkl. Saldo): ${vacDaysTotal}
+Logik: 
+ganze Monate (${monthsBetween}) * 
+Urlaubsanspruch/Monat (${vacDaysInMonth}) + 
+(Anzahl der Tage gearbeitet im letzten Monat (${multiplyFactor}) * Urlaubsanspruch/Tag im letzten Monat (${vacDaysProDayInLastMonth}) + 
+eingegebene Saldo (${currentSaldo}))
 <span class="big-smiley">🟢 Saldo Result: ${saldoResult}</span>
 `;
 document.getElementById('result').innerHTML = result;
@@ -292,5 +298,3 @@ document.getElementById('result').innerHTML = result;
     </script>
 </body>
 </html>
-
-
