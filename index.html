@@ -1,298 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urlaubsrechner</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .hidden { display: none; }
-        .popover {
-            max-width: 200px;
-        }
-        .big-smiley {
-            font-size: 2em; /* Adjust the size as needed */
-        }
-        .loader {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-        }
+  <meta charset="UTF-8">
+  <title>Simple HTML Page with Live Chat Integration</title>
+  <style>
+    #chat-widget-container {
+      font-family: 'Helvetica', 'Arial', Courier, monospace;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      height: 500px;
+      display: none;
+    }
 
-
-    </style>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.4/lottie.min.js"></script
-        
-
+    /* Button styling */
+    #chat-widget-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Helvetica', 'Arial', Courier, monospace;
+      font-weight: 100;
+    }
+  </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Urlaubsrechner</h1>
-        <form id="saldoForm" class="bg-white p-4 rounded shadow-sm" novalidate>
-            <div id="warnings" class="alert alert-danger hidden" role="alert"></div>
+<body>
 
-            <div class="form-group">
-                <label for="dateTo">Austrittsdatum</label>
-                <input type="date" class="form-control" id="dateTo" name="dateTo" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="currentSaldo">Saldo</label>
-                <input type="number" class="form-control" id="currentSaldo" name="currentSaldo" step="0.01" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="workingDaysPerWeek">Arbeitstage/Woche</label>
-                <input type="number" class="form-control" id="workingDaysPerWeek" name="workingDaysPerWeek" min="1" max="6" required>
-            </div>
-            
-            <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="worksLessThanMonth" name="worksLessThanMonth">
-                <label class="form-check-label" for="worksLessThanMonth">Eintritt und Austritt im gleichen Monat? 
-                </label>
-                
-            </div>
-            
-            <div id="dateFromContainer" class="form-group hidden">
-                <label for="dateFrom">Eintrittsdatum</label>
-                <input type="date" class="form-control" id="dateFrom" name="dateFrom">
-            </div>
+  <h1>Simple HTML Page with Live Chat Integration</h1>
 
-            <button type="button" class="btn btn-primary" onclick="calculateSaldo()">Berechnen</button>
-            <div id="loader" class="loader"></div>
+  <!-- Chat Widget Button -->
+  <div id="chat-widget-button">Bot</div>
 
-        </form>
+  <!-- Chat Widget Container -->
+  <div id="chat-widget-container"></div>
 
-        <pre id="result" class="bg-white p-4 rounded shadow-sm"></pre>
-    </div>
+  <!-- Include the Live Chat Widget Script -->
+  <script src="https://a.messageflow.ai/live_chat/chat_v3.js"></script>
 
-    <script>    
-        let wrongLoaderVisible = false;
-        let wrongAnimation = null;
-        function showWrongLoader() {
-            if (wrongLoaderVisible) return; // Prevent showing multiple loaders
+  <script>
+    // Wait for the DOM to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the live chat widget
+      var liveChatWidget = new LiveChatWidget({
+        host:  'https://a.messageflow.ai/internal_api/chat/show?uid=271f0d8f6f571470d7c50177a052866730960e6c&external_id=widget_1_488300ed-e933-4da1-93aa-6514af9de7e2&css_url=/live_chat/chat.css&chat_title=Demo Assistant:2024-10-05T14:06:50.609Z', // Replace with the host of your live chat
+        uid: '271f0d8f6f571470d7c50177a052866730960e6c', // Replace with your live chat instance UID
+        css_url: 'https:///live_chat/chat.css', // Provide your own CSS if you want
+        show_question: false, // false shows only the chat window
+        button_title: 'Bot', // Text inside the button
+        external_id: 'live_chat_1', // Identifies this live chat widget
+        chat_title: 'Assistant', // Sets the title of the chat window
+        container_element: document.getElementById('chat-widget-container'), // Element to render the chat widget
+      });
 
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
-            wrongLoaderVisible = true;
+      // Toggle chat widget when the button is clicked
+      var chatButton = document.getElementById('chat-widget-button');
+      chatButton.addEventListener('click', function() {
+        liveChatWidget.toggle();
+      });
+    });
+  </script>
 
-            // Remove any previous animation if exists
-            if (wrongAnimation) {
-                wrongAnimation.destroy();
-            }
-
-            wrongAnimation = lottie.loadAnimation({
-                container: loader,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: 'https://lottie.host/254866ab-487b-4272-a4fe-3ffd5f188d1e/CLT7MU5zFq.json'
-            });
-
-            setTimeout(() => {
-                loader.style.display = 'none';
-                wrongLoaderVisible = false;
-                wrongAnimation.destroy(); // Stop the animation after hiding the loader
-                wrongAnimation = null;
-            }, 2000);
-     }
-
-
-
-
-        let loaderVisible = false;
-        let animation = null;
-        function showLoader() {
-            if (loaderVisible) return; // Prevent showing multiple loaders
-
-            const loader = document.getElementById('loader');
-            loader.style.display = 'block';
-            loaderVisible = true;
-
-            // Remove any previous animation if exists
-            if (animation) {
-                animation.destroy();
-            }
-
-            animation = lottie.loadAnimation({
-                container: loader,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: 'https://lottie.host/3f4cb0bf-3ef0-4e4c-9f7b-faac55baf050/a1XjgTyIDs.json' // Replace with your Lottie animation link
-            });
-
-            setTimeout(() => {
-                loader.style.display = 'none';
-                loaderVisible = false;
-                animation.destroy(); // Stop the animation after hiding the loader
-                animation = null;
-            }, 2000);
-            
-        }
-
-      
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const worksLessThanMonth = document.getElementById('worksLessThanMonth');
-            worksLessThanMonth.addEventListener('change', function() {
-                const dateFromContainer = document.getElementById('dateFromContainer');
-                if (this.checked) {
-                    dateFromContainer.classList.remove('hidden');
-                } else {
-                    dateFromContainer.classList.add('hidden');
-                    document.getElementById('dateFrom').value = '';
-                }
-            });
-        });
-
-        function showWarning(message) {
-            const warningsDiv = document.getElementById('warnings');
-            warningsDiv.textContent = message;
-            warningsDiv.classList.remove('hidden');
-        }
-
-        function clearWarnings() {
-            const warningsDiv = document.getElementById('warnings');
-            warningsDiv.textContent = '';
-            warningsDiv.classList.add('hidden');
-        }
-
-        function clearResult() {
-            document.getElementById('result').textContent = '';
-        }
-
-        function validateInputFields(dateFrom, dateTo, currentSaldo, workingDaysPerWeek, worksLessThanMonth) {
-            const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-            if (isNaN(dateTo) || dateTo === "") {
-                showWarning("Bitte Austrittsdatum ausfüllen");
-                clearResult();
-                return false;
-            }
-            if (isNaN(currentSaldo)) {
-                showWarning("Bitte Saldo ausfüllen");
-                clearResult();
-                return false;
-            }
-            if (isNaN(workingDaysPerWeek)) {
-                showWarning("Bitte Arbeitstage/Woche ausfüllen");
-                clearResult();
-                return false;
-            }
-
-            if (worksLessThanMonth) {
-                if (isNaN(dateFrom) || dateFrom == null || dateFrom === null) {
-                showWarning("Bitte Eintrittsdatum ausfüllen");
-                clearResult();
-                return false;
-            }
-                if (currentSaldo !== 0) {
-                    showWarning("Saldo muss in diesem fall 0 sein");
-                    clearResult();
-                    return false;
-                }
-                if ((dateFrom.getMonth() + 1 !== currentMonth || dateFrom.getFullYear() !== currentYear) || 
-                    (dateTo.getMonth() + 1 !== currentMonth || dateTo.getFullYear() !== currentYear)) {
-                    showWarning("Eintrittsdatum oder Austrittsdatum liegen nicht in diesem Monat (" +currentMonth+ ") oder Jahr (" + currentYear+")");
-                    clearResult();
-                    return false;
-                }
-                if (dateFrom > dateTo) {
-                    showWarning("Eintrittsdatum kann nicht nach dem Austrittsdatum stehen");
-                    clearResult();
-                    return false;
-                }
-            }
-            if (dateTo.getFullYear() < currentYear || (dateTo.getFullYear() === currentYear && dateTo.getMonth() + 1 < currentMonth)) {
-                showWarning("Austrittsdatum kann nicht im vergangenen Monat oder Jahr liegen");
-                clearResult();
-                return false;
-            }
-            if (workingDaysPerWeek < 1 || workingDaysPerWeek > 6) {
-                showWarning("Arbeitstage/Woche müssen zwischen 1 und 6 sein");
-                clearResult();
-                return false;
-            }
-
-            return true;
-        }
-
-
-
-        function calculateSaldo() {
-            clearWarnings();
-
-            const dateTo = new Date(document.getElementById('dateTo').value);
-            const currentSaldo = parseFloat(document.getElementById('currentSaldo').value);
-            const workingDaysPerWeek = parseInt(document.getElementById('workingDaysPerWeek').value);
-            const worksLessThanMonth = document.getElementById('worksLessThanMonth').checked;
-            const dateFromValue = document.getElementById('dateFrom').value;
-            const dateFrom = dateFromValue ? new Date(dateFromValue) : null;
-
-            if (!validateInputFields(dateFrom, dateTo, currentSaldo, workingDaysPerWeek, worksLessThanMonth)) {
-                showWrongLoader();
-                return;
-            }
-
-            const currentDate = new Date();
-            const currentMonthFirstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            const formattedCurrentMonthFirstDay = currentMonthFirstDay.toISOString().split('T')[0];
-
-            const vacDaysInYear = workingDaysPerWeek * 5;
-            const vacDaysInMonth = (vacDaysInYear / 12).toFixed(2);
-            const dateToObj = new Date(dateTo);
-            const currentMonth = new Date().getMonth() + 1;
-            const monthsBetween = monthsBetweenF(currentDate, dateTo);
-            const daysInTheLastMonth = new Date(dateToObj.getFullYear(), dateToObj.getMonth() + 1, 0).getDate();
-
-            let multiplyFactor;
-            if (worksLessThanMonth) {
-                const additionalDateFromObj = new Date(dateFromValue);
-                const daysWorkedInMonth = dateToObj.getDate() - additionalDateFromObj.getDate() + 1;
-                multiplyFactor = daysWorkedInMonth;
-            } else {
-                multiplyFactor = dateToObj.getDate();
-            }
-            const vacDaysProDayInLastMonth = (vacDaysInMonth / daysInTheLastMonth);
-            const vacDaysInTheLastMonth = (vacDaysProDayInLastMonth * multiplyFactor).toFixed(10);
-            const vacDaysInt = (vacDaysInMonth * monthsBetween).toFixed(2);
-            const vacDaysTotal = (parseFloat(vacDaysInTheLastMonth) + parseFloat(vacDaysInt)).toFixed(2);
-            const saldoResult = (parseFloat(vacDaysTotal) + currentSaldo).toFixed(2);
-            const altm = worksLessThanMonth == true ? 'Ja' : 'Nein'
-            showLoader();
-            const result = `
-Urlaubsanspruch pro Jahr: ${vacDaysInYear}
-Urlaubsanspruch pro Monat: ${vacDaysInMonth}
-Monate zwischen now und Austrittsdatum: ${monthsBetween}
-Anzahl der Tage im Austrittsmonat: ${daysInTheLastMonth}
-Eintritt und Austritt im gleichen Monat: ${altm}
-Urlaubsanspruch pro Tag im Austrittsmonat: ${vacDaysInTheLastMonth}
-Urlaubsanspruch (exkl. Saldo): ${vacDaysTotal}
-Logik: 
-ganze Monate (${monthsBetween}) * Urlaubsanspruch/Monat (${vacDaysInMonth}) + 
-(Anzahl der Tage gearbeitet im letzten Monat (${multiplyFactor}) * Urlaubsanspruch/Tag im letzten Monat (${vacDaysProDayInLastMonth}) + 
-eingegebene Saldo (${currentSaldo}))
-<span class="big-smiley">🟢 Saldo Result: ${saldoResult}</span>
-`;
-document.getElementById('result').innerHTML = result;
-        }
-
-        function monthsBetweenF(date1, date2) {
-            // Ensure both dates are set to the first of the month
-            let d1 = new Date(date1.getFullYear(), date1.getMonth(), 1);
-            let d2 = new Date(date2.getFullYear(), date2.getMonth(), 1);
-            
-            // Calculate the difference in months
-            let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
-            return months;
-        }
-    </script>
 </body>
 </html>
