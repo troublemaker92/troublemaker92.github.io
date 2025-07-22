@@ -48,23 +48,34 @@
   <!-- Chat Widget Container -->
   <div id="chat-widget-container"></div>
 
+  <!-- 1) Load the widget library -->
+  <script src="https://a.messageflow.ai/live_chat/chat.js"></script>
+
   <script>
-    // 1. Generate or retrieve a unique external_id for each visitor
+    // 2) Persistent external_id
     let externalId = localStorage.getItem('chat_external_id');
     if (!externalId) {
       externalId = 'user_' + Math.random().toString(36).substr(2, 8);
       localStorage.setItem('chat_external_id', externalId);
     }
-  
-    // 2. Initialize the live chat widget with persistent external_id
-    new LiveChatWidget({
+
+    // 3) Instantiate into your container
+    const chat = new LiveChatWidget({
       host:         "https://a.messageflow.ai",
       uid:          "e1fe2d3dcaa36e7e23a31e90156d32f1bd07b3a7",
       css_url:      "https://a.messageflow.ai/live_chat/chat.css",
       show_question:false,
       button_title: "Chat",
-      external_id:  externalId, // <- persists across reloads
-      chat_title:   "Support Chat"
+      external_id:  externalId,
+      chat_title:   "Support Chat",
+      container:    '#chat-widget-container'
+    });
+
+    // 4) Toggle on button click
+    const btn = document.getElementById('chat-widget-button');
+    const container = document.getElementById('chat-widget-container');
+    btn.addEventListener('click', () => {
+      container.style.display = container.style.display === 'none' ? 'block' : 'none';
     });
   </script>
 
